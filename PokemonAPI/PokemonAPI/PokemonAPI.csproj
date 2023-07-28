@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
       <PrivateAssets>all</PrivateAssets>
@@ -19,23 +20,31 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Data\Dto\Users.cs" />
     <Compile Remove="Pages\**" />
+    <Compile Remove="ViewModels\**" />
+    <Compile Remove="Interfaces\PokemonInterface.cs" />
+    <Compile Remove="Interfaces\IUser.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="Pages\**" />
+    <EmbeddedResource Remove="ViewModels\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Pages\**" />
+    <Content Remove="ViewModels\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Pages\**" />
+    <None Remove="ViewModels\**" />
   </ItemGroup>
 
   <ItemGroup>

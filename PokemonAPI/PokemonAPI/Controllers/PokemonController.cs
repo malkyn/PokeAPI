@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PokemonAPI.Data.Dto.Pokemon;
 using PokemonAPI.Interfaces;
 
 namespace PokemonAPI.Controllers;
@@ -19,15 +20,21 @@ public class PokemonController : ControllerBase
         return Ok(await _pokemonService.GetRandomPokemon());
     }
 
-    [HttpGet("pokemon/{id}")]
-    public async Task<IActionResult> GetPokemonById([FromRoute] int id)
+    [HttpGet("pokemon/{name}")]
+    public async Task<IActionResult> GetPokemonByName([FromRoute] string name)
     {
-        return Ok(await _pokemonService.GetPokemonById(id));
+        return Ok(await _pokemonService.GetPokemonByName(name));
     }
 
-    [HttpGet("capture")]
-    public async Task<IActionResult> CapturePokemon()
+    [HttpGet("listapokemons/{userId}")]
+    public async Task<IActionResult> GetListaPokemons(int userId)
     {
-        return Ok(await _pokemonService.CapturePokemon());
+        return Ok(await _pokemonService.GetListPokemon(userId));
+    }
+    
+    [HttpPost("capture/{userId}")]
+    public async Task<IActionResult> CapturePokemon([FromRoute] int userId, [FromBody] CapturarPokemon pokemonName)
+    {
+        return Ok(await _pokemonService.CapturePokemon(userId, pokemonName));
     }
 }

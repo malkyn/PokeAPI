@@ -4,47 +4,29 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PokemonAPI.Data;
 using PokemonAPI.Data.Dto.Users;
+using PokemonAPI.Interfaces;
 using PokemonAPI.Models;
-using PokemonAPI.ViewModels;
 
 namespace PokemonAPI.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
-    private readonly AppDbDataContext _context;
-    private readonly IMapper _mapper;
-    public UserController(AppDbDataContext context, IMapper mapper)
+    private readonly IUserServices _userServices;
+    public UserController(IUserServices userServices)
     {
-        _context = context;
-        _mapper = mapper;
+        _userServices = userServices;
     }
     [HttpGet]
     [Route("users/{id}")]
     public async Task<IActionResult> Get([FromRoute] int id)
     {
-        var users = await _context
-            .Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
-        
-        return users == null ? NotFound() : Ok(users);
+        return Ok(_userServices.GetUser(id));
     }
 
     [HttpPost("cadastro")]
     public async Task<IActionResult> PostAsync([FromBody] CreateUserDto userDto)
     {
-        User user = _mapper.Map<User>(userDto);
-        if (!ModelState.IsValid)
-            return BadRequest();
-        try
-        {
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-            return Created($"user/cadastro/{user.Id}", user);
-        }
-        catch (Exception e)
-        {
-            return BadRequest();
-        }
+        return Ok(_userServices.RegisterUser(userDto));
     }
+    
 }

@@ -1,8 +1,13 @@
-
+using System.Data;
+using System.Diagnostics;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using PokemonAPI.Data;
+using PokemonAPI.Data.Dto.Pokemon;
 using PokemonAPI.Interfaces;
+using PokemonAPI.Migrations;
 using PokemonAPI.Models;
 
 namespace PokemonAPI.Services;
@@ -11,11 +16,12 @@ public class PokemonService : IPokemonService
 {
     private readonly HttpClient _client;
     private readonly AppDbDataContext _context;
+    private readonly IMapper _mapper;
     private readonly string baseUrl = "https://pokeapi.co/api/v2";
 
-    public PokemonService(HttpClient client, AppDbDataContext context)
+    public PokemonService(HttpClient client, AppDbDataContext context, IMapper mapper)
     {
-
+        _mapper = mapper;
         _client = client;
         _context = context;
     }
@@ -30,44 +36,81 @@ public class PokemonService : IPokemonService
             var response = await _client.GetFromJsonAsync<Pokemon>($"{baseUrl}/pokemon/{id}");
             if (response != null) pokemons.Add(response);
         }
+
         return pokemons;
     }
 
-    public async Task<Pokemon?> GetPokemonById(int id)
+    public async Task<Pokemon?> GetPokemonByName(string name)
     {
-        return await _client.GetFromJsonAsync<Pokemon>($"{baseUrl}/pokemon/{id}");
+        try
+        {
+            var result = await _client.GetFromJsonAsync<Pokemon>($"{baseUrl}/pokemon/{name}");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Pokemon não encontrado", ex);
+        }
     }
 
-    public async Task<string> CapturePokemon()
+    public async Task<string> CapturePokemon(int userId, CapturarPokemon nomePokemon)
     {
         bool isCaptured = TryCap();
-        var pokemon = GetPokemon();
-        
-        if (isCaptured)
+        var pokemon = GetPokemonByName(nomePokemon.name);
+        var result = _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        var pokemonMap = _mapper.Map<Pokemon>(nomePokemon);
+        if (pokemon.Result.name != null)
         {
-            var result = _context.Users.FirstOrDefaultAsync().Result;
-            if (result != null)
+            PokemonsCapturados pokemonsCapturados = new PokemonsCapturados
             {
-                result.NumeroDePokemon++;
-                result.Pokemons.Add(pokemon.Result);
-                await _context.SaveChangesAsync();
+                PokemonName = pokemonMap.name,
+                UserId = userId
+            };
+
+            if (isCaptured)
+            {
+                if (result.Result != null)
+                {
+                    result.Result.NumeroDePokemon++;
+                    _context.PokemonsCapturados.Add(pokemonsCapturados);
+                    await _context.SaveChangesAsync();
+                }
+
+                return $"Parabéns! {nomePokemon.name} foi capturado com sucesso!";
             }
-            return pokemon.Result.ToString();
+            else
+            {
+                return "Mais sorte na próxima!";
+            }
         }
         else
         {
-            return "Mais sorte na próxima!";
+            return "Pokemon não encontrado!";
         }
     }
 
-    private async Task<string> GetPokemon()
+    public async Task<List<string>> GetListPokemon(int userId)
     {
-        Random number = new Random();
-        int id = number.Next(1, 1010);
-        var response =  await _client.GetFromJsonAsync<Pokemon>($"{baseUrl}/pokemon/{id}");
-        return response.name;
+        List<string> listaPokemons = new List<string>();
+        using (SqliteConnection connect = new SqliteConnection(@"Data Source= F:\PokeAPI\PokemonAPI\PokemonAPI\app.db"))
+        {
+            connect.Open();
+            string query = $"select PokemonName from PokemonsCapturados WHERE UserId = {userId}";
+            using (SqliteCommand command = new SqliteCommand(query, connect))
+            {
+                using (SqliteDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string name = reader["PokemonName"].ToString() ?? throw new InvalidOperationException();
+                        listaPokemons.Add(name);
+                    }
+                }
+            }
+            return listaPokemons;
+        }
     }
-    
+
     private bool TryCap()
     {
         Random number = new Random();
