@@ -1,7 +1,9 @@
+using AutoMapper;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PokemonAPI.Data;
+using PokemonAPI.Data.Dto.Users;
 using PokemonAPI.Models;
 using PokemonAPI.ViewModels;
 
@@ -10,9 +12,11 @@ namespace PokemonAPI.Controllers;
 public class UserController : ControllerBase
 {
     private readonly AppDbDataContext _context;
-    public UserController(AppDbDataContext context)
+    private readonly IMapper _mapper;
+    public UserController(AppDbDataContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
     [HttpGet]
     [Route("users/{id}")]
@@ -27,18 +31,11 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("cadastro")]
-    public async Task<IActionResult> PostAsync([FromBody] CreateUserViewModel model)
+    public async Task<IActionResult> PostAsync([FromBody] CreateUserDto userDto)
     {
+        User user = _mapper.Map<User>(userDto);
         if (!ModelState.IsValid)
             return BadRequest();
-
-        var user = new User()
-        {
-            Name = model.Name,
-            Idade = model.Idade,
-            CPF = model.CPF
-        };
-
         try
         {
             await _context.Users.AddAsync(user);

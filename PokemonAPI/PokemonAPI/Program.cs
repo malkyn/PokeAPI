@@ -1,12 +1,18 @@
 using PokemonAPI.Data;
+using PokemonAPI.Interfaces;
+using PokemonAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddScoped<IPokemonService, PokemonService>();
+builder.Services.AddHttpClient<IPokemonService, PokemonService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddDbContext<AppDbDataContext>();
+
 
 var app = builder.Build();
 
