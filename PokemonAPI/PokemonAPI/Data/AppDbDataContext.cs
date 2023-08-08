@@ -5,13 +5,22 @@ namespace PokemonAPI.Data
 {
     public class AppDbDataContext : DbContext
     {
+        protected readonly IConfiguration Configuration;
+
+        public AppDbDataContext(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
         public DbSet<User> Users { get; set; }
         public DbSet<PokemonsCapturados> PokemonsCapturados { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseSqlite("DataSource=app.db;Cache=Shared");
+        {
+            optionsBuilder.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+        }
 
-        protected override void OnModelCreating(ModelBuilder builder)
+
+    protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<User>()
                 .HasMany(pokemon => pokemon.Pokemons)

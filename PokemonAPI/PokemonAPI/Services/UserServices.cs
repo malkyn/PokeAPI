@@ -36,6 +36,7 @@ public class UserServices : IUserServices
     public async Task<ReadUserDto> RegisterUser(CreateUserDto userDto)
     {
         User user = _mapper.Map<User>(userDto);
+        
 
         await _context.Users.AddAsync(user);
         await _context.SaveChangesAsync();

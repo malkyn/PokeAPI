@@ -1,5 +1,6 @@
 using Microsoft.OpenApi.Models;
 using PokemonAPI.Data;
+using PokemonAPI.Data.Database;
 using PokemonAPI.Interfaces;
 using PokemonAPI.Services;
 
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IPokemonService, PokemonService>();
 builder.Services.AddScoped<IUserServices, UserServices>();
+builder.Services.AddScoped<ISqlLiteDB, SqlLiteDB>();
 builder.Services.AddHttpClient<IPokemonService, PokemonService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

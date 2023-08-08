@@ -6,6 +6,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using PokemonAPI.Data;
 using PokemonAPI.Data.Dto.Pokemon;
+using PokemonAPI.Exceptions;
 using PokemonAPI.Interfaces;
 using PokemonAPI.Migrations;
 using PokemonAPI.Models;
@@ -17,13 +18,19 @@ public class PokemonService : IPokemonService
     private readonly HttpClient _client;
     private readonly AppDbDataContext _context;
     private readonly IMapper _mapper;
+    private readonly ISqlLiteDB _sqlLite;
     private readonly string baseUrl = "https://pokeapi.co/api/v2";
 
-    public PokemonService(HttpClient client, AppDbDataContext context, IMapper mapper)
+    public PokemonService(HttpClient client, AppDbDataContext context, IMapper mapper, ISqlLiteDB sqlLite)
     {
         _mapper = mapper;
         _client = client;
         _context = context;
+        _sqlLite = sqlLite;
+    }
+
+    public PokemonService()
+    {
     }
 
     public async Task<List<Pokemon>> GetRandomPokemon()
@@ -49,66 +56,41 @@ public class PokemonService : IPokemonService
         }
         catch (Exception ex)
         {
-            throw new Exception("Pokemon não encontrado", ex);
+            throw new Exception(ExceptionConsts.Pokemon.PokemonNaoEncontrado);
         }
     }
 
     public async Task<string> CapturePokemon(int userId, CapturarPokemon nomePokemon)
     {
-        bool isCaptured = TryCap();
+        var isCaptured = TryCap();
         var pokemon = GetPokemonByName(nomePokemon.name);
         var result = _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
         var pokemonMap = _mapper.Map<Pokemon>(nomePokemon);
-        if (pokemon.Result.name != null)
+        var pokemonsCapturados = new PokemonsCapturados
         {
-            PokemonsCapturados pokemonsCapturados = new PokemonsCapturados
-            {
-                PokemonName = pokemonMap.name,
-                UserId = userId
-            };
+            PokemonName = pokemonMap.name,
+            UserId = userId
+        };
 
-            if (isCaptured)
-            {
-                if (result.Result != null)
-                {
-                    result.Result.NumeroDePokemon++;
-                    _context.PokemonsCapturados.Add(pokemonsCapturados);
-                    await _context.SaveChangesAsync();
-                }
-
-                return $"Parabéns! {nomePokemon.name} foi capturado com sucesso!";
-            }
-            else
-            {
-                return "Mais sorte na próxima!";
-            }
-        }
-        else
+        if (result.Result == null)
+            throw new Exception(ExceptionConsts.Users.UsuarioNaoEncontrado);
+        if (pokemon.Result == null)
+            throw new Exception(ExceptionConsts.Pokemon.PokemonNaoEncontrado);
+        if (!isCaptured)
+            throw new Exception(ExceptionConsts.Pokemon.FalhaCaptura);
+        if (result.Result != null && pokemon.Result != null && isCaptured)
         {
-            return "Pokemon não encontrado!";
+            _context.PokemonsCapturados.Add(pokemonsCapturados);
+            await _context.SaveChangesAsync();
         }
+        
+        return $"Parabéns! {nomePokemon.name} foi capturado com sucesso!";
     }
 
-    public async Task<List<string>> GetListPokemon(int userId)
+    public async Task<DataTable> GetListPokemon(int userId)
     {
-        List<string> listaPokemons = new List<string>();
-        using (SqliteConnection connect = new SqliteConnection(@"Data Source= F:\PokeAPI\PokemonAPI\PokemonAPI\app.db"))
-        {
-            connect.Open();
-            string query = $"select PokemonName from PokemonsCapturados WHERE UserId = {userId}";
-            using (SqliteCommand command = new SqliteCommand(query, connect))
-            {
-                using (SqliteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        string name = reader["PokemonName"].ToString() ?? throw new InvalidOperationException();
-                        listaPokemons.Add(name);
-                    }
-                }
-            }
-            return listaPokemons;
-        }
+        DataTable data = await _sqlLite.ReturnData(userId);
+        return data;
     }
 
     private bool TryCap()
