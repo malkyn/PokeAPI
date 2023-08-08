@@ -20,13 +20,13 @@ public class UserController : ControllerBase
     [Route("users/{id}")]
     public async Task<IActionResult> Get([FromRoute] int id)
     {
-        return Ok(_userServices.GetUser(id));
+        return Ok(await _userServices.GetUser(id));
     }
 
     [HttpPost("cadastro")]
     public async Task<IActionResult> PostAsync([FromBody] CreateUserDto userDto)
     {
-        return Ok(_userServices.RegisterUser(userDto));
+        return Ok(await _userServices.RegisterUser(userDto));
     }
     
 }

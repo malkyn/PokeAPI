@@ -3,6 +3,8 @@ using PokemonAPI.Data;
 using PokemonAPI.Data.Database;
 using PokemonAPI.Interfaces;
 using PokemonAPI.Services;
+using Microsoft.Extensions.Configuration;
+using PokemonAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v0.1", new OpenApiInfo { Title = "My API", Version = "v0.1" });
 });
+builder.Configuration.GetSection("ApiConfig").Get<ApiConfig>();
 
 
 var app = builder.Build();
@@ -39,7 +42,6 @@ app.UseSwaggerUI(c =>
 });
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 app.UseAuthorization();
 app.MapControllers();

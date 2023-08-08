@@ -16,7 +16,7 @@ namespace PokemonAPI.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+            optionsBuilder.UseSqlite(Configuration.GetValue<string>("ConnectionStrings:DefaultConnection"));
         }
 
 

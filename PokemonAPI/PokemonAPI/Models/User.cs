@@ -15,7 +15,6 @@ namespace PokemonAPI.Models
         [Required]
         public string CPF { get; set; }
         public string Regiao { get; set; }
-        public int PokemonId { get; set; }
         public virtual ICollection<Pokemon> Pokemons { get; set; }
     }
 }

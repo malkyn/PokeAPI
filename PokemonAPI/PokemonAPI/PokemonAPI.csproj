@@ -33,6 +33,9 @@
     <Compile Remove="ViewModels\**" />
     <Compile Remove="Interfaces\PokemonInterface.cs" />
     <Compile Remove="Interfaces\IUser.cs" />
+    <Compile Remove="Models\Stat.cs" />
+    <Compile Remove="Models\Stat2.cs" />
+    <Compile Remove="Models\PokemonReturn.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +51,7 @@
   <ItemGroup>
     <None Remove="Pages\**" />
     <None Remove="ViewModels\**" />
+    <None Remove="app.db" />
   </ItemGroup>
 
   <ItemGroup>

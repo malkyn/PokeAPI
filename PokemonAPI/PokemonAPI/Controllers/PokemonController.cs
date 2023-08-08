@@ -32,7 +32,7 @@ public class PokemonController : ControllerBase
         return Ok(await _pokemonService.GetListPokemon(userId));
     }
     
-    [HttpPost("capture/{userId}")]
+    [HttpPost("capturar/{userId}")]
     public async Task<IActionResult> CapturePokemon([FromRoute] int userId, [FromBody] CapturarPokemon pokemonName)
     {
         return Ok(await _pokemonService.CapturePokemon(userId, pokemonName));

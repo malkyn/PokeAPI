@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PokemonAPI.Data;
 using PokemonAPI.Data.Dto.Users;
+using PokemonAPI.Exceptions;
 using PokemonAPI.Interfaces;
 using PokemonAPI.Models;
 
@@ -30,14 +31,12 @@ public class UserServices : IUserServices
             ReadUserDto userDto = _mapper.Map<ReadUserDto>(users);
             return userDto;
         }
-        return null;
+        throw new Exception(ExceptionConsts.Users.UsuarioNaoEncontrado);
     }
 
     public async Task<ReadUserDto> RegisterUser(CreateUserDto userDto)
     {
         User user = _mapper.Map<User>(userDto);
-        
-
         await _context.Users.AddAsync(user);
         await _context.SaveChangesAsync();
         return _mapper.Map<ReadUserDto>(user);
