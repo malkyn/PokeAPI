@@ -33,44 +33,19 @@ public class PokemonService : IPokemonService
         _config = config;
     }
 
-    public PokemonService()
-    {
-    }
-
     public async Task<List<PokemonResult>> GetRandomPokemon()
     {
-        Random number = new Random();
-        List<PokemonResult> pokemons = new List<PokemonResult>();
+        var random = new Random();
+        var pokemons = new List<PokemonResult>();
+        var apiUrl = _config.GetValue<string>("ApiConfig:ApiUrl");
+
         for (int i = 0; i < 10; i++)
         {
-            int id = number.Next(1, 1010);
-            var response =
-                await _client.GetFromJsonAsync<Pokemon>($"{_config.GetValue<string>("ApiConfig:ApiUrl")}/pokemon/{id}");
-            var pokemon64 = ConvertSpriteToBase64(response.sprites.front_default);
-            if (response?.sprites.front_default == null)
-            {
-                pokemons.Add(new PokemonResult
-                {
-                    Nome = response.name,
-                    Altura = response.height,
-                    Peso = response.weight,
-                    Tipo = response.types[0].type.name,
-                    Base64 = "Sem sprite."
-                });
-            }
-            else
-            {
-                pokemons.Add(new PokemonResult
-                {
-                    Nome = response.name,
-                    Altura = response.height,
-                    Peso = response.weight,
-                    Tipo = response.types[0].type.name,
-                    Base64 = pokemon64.Result
-                });
-            }
+            int id = random.Next(1, 1010);
+            var response = await _client.GetFromJsonAsync<Pokemon>($"{apiUrl}/pokemon/{id}");
+            var pokemonResult = CreatePokemonResult(response);
+            pokemons.Add(pokemonResult);
         }
-
         return pokemons;
     }
 
@@ -78,32 +53,14 @@ public class PokemonService : IPokemonService
     {
         try
         {
-            var result =
-                await _client.GetFromJsonAsync<Pokemon>(
-                    $"{_config.GetValue<string>("ApiConfig:ApiUrl")}/pokemon/{name}");
-            if (result != null)
-            {
-                var pokemon64 = ConvertSpriteToBase64(result.sprites.front_default);
-                return new PokemonResult
-                {
-                    Nome = result.name,
-                    Altura = result.height,
-                    Peso = result.weight,
-                    Tipo = result.types[0].type.name,
-                    Base64 = pokemon64.Result
-                };
-            }
+            var apiUrl = _config.GetValue<string>("ApiConfig:ApiUrl");
+            var pokemonApiUrl = $"{apiUrl}/pokemon/{name}";
 
-            return new PokemonResult
-            {
-                Nome = result.name,
-                Altura = result.height,
-                Peso = result.weight,
-                Tipo = result.types[0].type.name,
-                Base64 = "Sem sprite."
-            };
+            var result = await _client.GetFromJsonAsync<Pokemon>(pokemonApiUrl);
+
+            return CreatePokemonResult(result);
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
             throw new Exception(ExceptionConsts.Pokemon.PokemonNaoEncontrado);
         }
@@ -141,21 +98,53 @@ public class PokemonService : IPokemonService
         DataTable data = await _sqlLite.ReturnData(userId);
         return data;
     }
+    
+    /********************************************************************************************************************
+        *
+        *   Métodos Privados
+        *
+        */
+
+    private PokemonResult CreatePokemonResult(Pokemon? result)
+    {
+        if (result?.sprites.front_default == null)
+        {
+            return new PokemonResult
+            {
+                Nome = result.name,
+                Altura = result.height,
+                Peso = result.weight,
+                Tipo = result.types[0].type.name,
+                Base64 = "Sem sprite."
+            };
+        }
+
+        var pokemon64 = ConvertSpriteToBase64(result.sprites.front_default);
+        var tipos = result.types.Select(tipo => tipo.type.name).ToList();
+
+        return new PokemonResult
+        {
+            Nome = result.name,
+            Altura = result.height,
+            Peso = result.weight,
+            Tipo = string.Join(", ", tipos),
+            Base64 = pokemon64.Result
+        };
+    }
 
     private static bool TryCap()
     {
         var number = new Random();
         return number.Next(2) == 0;
     }
-
+    
     private static async Task<string> ConvertSpriteToBase64(string spriteUrl)
     {
-            using (HttpClient client = new HttpClient())
-            {
-            
-                HttpResponseMessage response = await client.GetAsync(spriteUrl);
-                byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
-                return Convert.ToBase64String(imageBytes);
-            }
+        using (HttpClient client = new HttpClient())
+        {
+            HttpResponseMessage response = await client.GetAsync(spriteUrl);
+            byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
+            return Convert.ToBase64String(imageBytes);
+        }
     }
 }

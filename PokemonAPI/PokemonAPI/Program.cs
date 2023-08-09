@@ -1,9 +1,13 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using PokemonAPI.Data;
 using PokemonAPI.Data.Database;
 using PokemonAPI.Interfaces;
 using PokemonAPI.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using PokemonAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +29,27 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Configuration.GetSection("ApiConfig").Get<ApiConfig>();
 
+var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("SECRETTOKEN"));
+builder.Services.AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
+
+builder.Services.AddCors();
+
 
 var app = builder.Build();
 
@@ -43,8 +68,9 @@ app.UseSwaggerUI(c =>
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-app.UseAuthorization();
 app.MapControllers();
 app.MapRazorPages();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();

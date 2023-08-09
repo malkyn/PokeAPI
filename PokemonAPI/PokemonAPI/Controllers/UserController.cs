@@ -6,15 +6,20 @@ using PokemonAPI.Data;
 using PokemonAPI.Data.Dto.Users;
 using PokemonAPI.Interfaces;
 using PokemonAPI.Models;
+using PokemonAPI.Services;
 
 namespace PokemonAPI.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
     private readonly IUserServices _userServices;
-    public UserController(IUserServices userServices)
+    private readonly IMapper _mapper;
+    private readonly AppDbDataContext _context;
+    public UserController(IUserServices userServices, IMapper mapper, AppDbDataContext context)
     {
         _userServices = userServices;
+        _mapper = mapper;
+        _context = context;
     }
     [HttpGet]
     [Route("users/{id}")]
@@ -28,5 +33,23 @@ public class UserController : ControllerBase
     {
         return Ok(await _userServices.RegisterUser(userDto));
     }
-    
+
+    [HttpPost("login")]
+    public async Task<ActionResult<dynamic>> Authenticate([FromBody] LoginUserDto userDto)
+    {
+        User user = _mapper.Map<User>(userDto);
+        user = _context.Get(user.Usuario, user.Senha);
+
+        if (user == null)
+            return NotFound(new { message = "Usuário ou senha inválidos." });
+
+        var token = await TokenService.GenerateToken(user);
+        user.Senha = "";
+
+        return Ok(new
+        {
+            usuario = user,
+            tokenDeAcesso = token
+        });
+    }
 }

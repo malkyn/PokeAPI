@@ -9,13 +9,15 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.21" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.20" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="7.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.9">
       <PrivateAssets>all</PrivateAssets>
@@ -25,6 +27,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-preview.7.23375.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.1.0-preview" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,22 +39,27 @@
     <Compile Remove="Models\Stat.cs" />
     <Compile Remove="Models\Stat2.cs" />
     <Compile Remove="Models\PokemonReturn.cs" />
+    <Compile Remove="Data\UserDbInitializer.cs" />
+    <Compile Remove="Models\ModelsPokemonApi\**" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="Pages\**" />
     <EmbeddedResource Remove="ViewModels\**" />
+    <EmbeddedResource Remove="Models\ModelsPokemonApi\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Pages\**" />
     <Content Remove="ViewModels\**" />
+    <Content Remove="Models\ModelsPokemonApi\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Pages\**" />
     <None Remove="ViewModels\**" />
     <None Remove="app.db" />
+    <None Remove="Models\ModelsPokemonApi\**" />
   </ItemGroup>
 
   <ItemGroup>
