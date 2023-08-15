@@ -1,16 +1,10 @@
 using System.Data;
-using System.Diagnostics;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using PokemonAPI.Data;
 using PokemonAPI.Data.Dto.Pokemon;
 using PokemonAPI.Exceptions;
 using PokemonAPI.Interfaces;
-using PokemonAPI.Migrations;
 using PokemonAPI.Models;
 
 namespace PokemonAPI.Services;
@@ -33,19 +27,23 @@ public class PokemonService : IPokemonService
         _config = config;
     }
 
-    public async Task<List<PokemonResult>> GetRandomPokemon()
+    public async Task<List<Pokemon>> GetRandomPokemonsAsync()
     {
-        var random = new Random();
-        var pokemons = new List<PokemonResult>();
-        var apiUrl = _config.GetValue<string>("ApiConfig:ApiUrl");
+        var tasks = new List<Task<Pokemon>>();
 
         for (int i = 0; i < 10; i++)
         {
-            int id = random.Next(1, 1010);
-            var response = await _client.GetFromJsonAsync<Pokemon>($"{apiUrl}/pokemon/{id}");
-            var pokemonResult = CreatePokemonResult(response);
-            pokemons.Add(pokemonResult);
+            tasks.Add(GetRandomPokemonAsync());
         }
+
+        await Task.WhenAll(tasks);
+
+        var pokemons = new List<Pokemon>();
+        foreach (var task in tasks)
+        {
+            pokemons.Add(await task);
+        }
+
         return pokemons;
     }
 
@@ -95,7 +93,7 @@ public class PokemonService : IPokemonService
 
     public async Task<DataTable> GetListPokemon(int userId)
     {
-        DataTable data = await _sqlLite.ReturnData(userId);
+        var data = await _sqlLite.ReturnData(userId);
         return data;
     }
     
@@ -105,6 +103,17 @@ public class PokemonService : IPokemonService
         *
         */
 
+    private async Task<Pokemon> GetRandomPokemonAsync()
+    {
+        var random = new Random();
+        var apiUrl = _config.GetValue<string>("ApiConfig:ApiUrl");
+        var pokemonApiUrl = $"{apiUrl}/pokemon/{random.Next(1, 1000)}";
+
+        var result = await _client.GetFromJsonAsync<Pokemon>(pokemonApiUrl);
+
+        return result ?? throw new InvalidOperationException();
+    }
+    
     private PokemonResult CreatePokemonResult(Pokemon? result)
     {
         if (result?.sprites.front_default == null)

@@ -7,5 +7,5 @@ public class PokemonResult
     public int Altura { get; set; }
     public int Peso { get; set; }
     public string Base64 { get; set; }
-    public string Evolucoes { get; set; }
+    public List<string> Evolucoes { get; set; }
 }

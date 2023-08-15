@@ -41,6 +41,7 @@
     <Compile Remove="Models\PokemonReturn.cs" />
     <Compile Remove="Data\UserDbInitializer.cs" />
     <Compile Remove="Models\ModelsPokemonApi\**" />
+    <Compile Remove="Models\PokemonResponse.cs" />
   </ItemGroup>
 
   <ItemGroup>
