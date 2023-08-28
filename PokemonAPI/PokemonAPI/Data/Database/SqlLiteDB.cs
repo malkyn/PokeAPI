@@ -15,8 +15,8 @@ public class SqlLiteDB : ISqlLiteDB
 
     public async Task<DataTable> ReturnData(int userId)
     {
-        string query = "SELECT PokemonName FROM PokemonsCapturados WHERE UserId = @Vallue";
-        using (SqliteConnection connection = new SqliteConnection(_configuration.GetConnectionString("DefaultConnection")))
+        const string query = "SELECT PokemonName FROM PokemonsCapturados WHERE UserId = @Vallue";
+        await using (SqliteConnection connection = new SqliteConnection(_configuration.GetConnectionString("DefaultConnection")))
         {
             connection.Open();
             DataTable dt = new DataTable();

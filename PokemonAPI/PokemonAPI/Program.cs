@@ -72,5 +72,6 @@ app.MapControllers();
 app.MapRazorPages();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors(c => c.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 
 app.Run();

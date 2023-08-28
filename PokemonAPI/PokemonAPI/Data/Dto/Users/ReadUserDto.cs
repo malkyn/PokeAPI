@@ -8,6 +8,6 @@ public class ReadUserDto
     public int Id { get; set; }
     public string Name { get; set; }
     public int Idade { get; set; }
-    public string CPF { get; set; }
+    //TODO = Alterar Regiao para enum
     public string Regiao { get; set; }
 }

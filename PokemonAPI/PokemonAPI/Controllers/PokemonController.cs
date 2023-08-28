@@ -21,7 +21,7 @@ public class PokemonController : ControllerBase
     [HttpGet("pokemon")]
     public async Task<IActionResult> GetPokemon()
     {
-        return Ok(await _pokemonService.GetRandomPokemon());
+        return Ok(await _pokemonService.GetRandomPokemonsAsync());
     }
 
     [HttpGet("pokemon/{name}")]
