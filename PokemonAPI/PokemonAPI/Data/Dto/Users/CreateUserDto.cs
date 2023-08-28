@@ -6,6 +6,7 @@ public class CreateUserDto
 {
     [Required] public string Usuario { get; set; }
     [Required] public string Senha { get; set; }
+    //TODO = Alterar Role para enum
     [Required] public string Role { get; set; }
     [Required] public string Name { get; set; }
     [Required] public int Idade { get; set; }
